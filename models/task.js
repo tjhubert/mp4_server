@@ -12,8 +12,8 @@ var TaskSchema = new mongoose.Schema({
   dateCreated: { type : Date, default : Date.now }
 });
 
-TaskSchema.path('name').required(true, 'Task name cannot be blank');
-TaskSchema.path('deadline').required(true, 'Task deadline cannot be blank');
+TaskSchema.path('name').required(true, 'task name cannot be blank');
+TaskSchema.path('deadline').required(true, 'task deadline cannot be blank');
 
 // Export the Mongoose model
 module.exports = mongoose.model('Task', TaskSchema);

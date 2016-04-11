@@ -9,8 +9,8 @@ var UserSchema   = new mongoose.Schema({
   dateCreated: { type : Date, default : Date.now }
 });
 
-UserSchema.path('name').required(true, 'User name cannot be blank');
-UserSchema.path('email').required(true, 'User email cannot be blank');
+UserSchema.path('name').required(true, 'user name cannot be blank');
+UserSchema.path('email').required(true, 'user email cannot be blank');
 
 UserSchema.path('email').validate(function (email, fn) {
   const User = mongoose.model('User');
@@ -21,7 +21,7 @@ UserSchema.path('email').validate(function (email, fn) {
       fn(!err && users.length === 0);
     });
   } else fn(true);
-}, 'Email already exists');
+}, 'email already exists');
 
 // Export the Mongoose model
 module.exports = mongoose.model('User', UserSchema);

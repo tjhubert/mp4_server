@@ -40,21 +40,6 @@ homeRoute.get(function(req, res) {
   res.json({ message: 'Hello World!' });
 });
 
-
-var queryCallback = function (err, data, res) {
-        if (err) {
-            res.status(500).send({
-                'message': err.message,
-                'data': []
-            });
-        } else {
-            res.status(200).json({
-                'message': 'OK',
-                'data': data
-            });
-        }
-    };
-
 //User route
 var userRoute = router.route('/users');
 
@@ -78,18 +63,39 @@ userRoute.get(function (req, res) {
 
     queryModel.
       sort(req.query.sort ? JSON.parse(req.query.sort) : {}).
-      limit(req.query.limit).
       select(req.query.select ? JSON.parse(req.query.select) : {}).
+      limit(req.query.limit).
       skip(req.query.skip).
       exec(function(err, users) {
-        queryCallback(err, users, res);
-      });
+        if (err) {
+            res.status(500).send({
+                'message': err.message,
+                'data': []
+            });
+        } else {
+            res.status(200).json({
+                'message': "OK",
+                'data': users
+            });
+        }
+    });
 });
 
 userRoute.post(function (req, res) {
     var newUser = new User(req.body);
     newUser.save(function (err, user) {
-        queryCallback(err, user, res);
+        if (err) {
+            res.status(500).send({
+                'message': err.message + ": " + 
+                    (_.map(err.errors, function (error) { return error.message; })).join(", "),
+                'data': []
+            });
+        } else {
+            res.status(200).json({
+                'message': "OK",
+                'data': user
+            });
+        }
     });
 });
 
@@ -98,66 +104,66 @@ var userIdRoute = router.route('/users/:id');
 userIdRoute.get(function (req, res) {
     User.findOne({'_id' : req.params.id}).
         exec(function(err, user) {
-            queryCallback(err, user, res);
-        })
-});
-
-userIdRoute.put(function (req, res) {
-
-    if (req.body.pendingTasks) {
-        var userPromise = User.findOne({'_id' : req.params.id}).exec();
-        userPromise.then(function (user){
-            req.body.pendingTasks = _.isArray(req.body.pendingTasks) ? _.uniq(req.body.pendingTasks) : [req.body.pendingTasks];
-            var oldPendingTasks = user.pendingTasks;
-            var newPendingTasks = req.body.pendingTasks
-            var taskToBeRemoved = _.difference(oldPendingTasks, newPendingTasks);
-            var taskToBeAdded = _.difference(newPendingTasks, oldPendingTasks);
-            if (taskToBeRemoved.length > 0) {
-                Task.update({'_id': { $in: taskToBeRemoved} }, {assignedUser: ''}, {assignedUserName: ''});
-            }
-            if (taskToBeAdded.length > 0) {
-                Task.find({'_id': { $in: taskToBeAdded} }, function(err, tasks) {
-                    tasks.forEach(function (task) {
-                        User.findOneAndUpdate({'_id' : task.assignedUser}, {$pull: {pendingTasks: task._id}});
-                        task.assignedUser = user._id;
-                        task.assignedUserName = user.name;
-                        task.save();
-                    })
-                });
-            }
-            User.update({'_id' : req.params.id}, req.body, function(err, user) {
-                queryCallback(err, user, res);
-            });
-        });
-    }
-    else {
-        User.update({'_id' : req.params.id}, req.body, function(err, user) {
-            queryCallback(err, user, res);
-        });
-    }
-
-});
-
-userIdRoute.delete(function (req, res) {
-    User.findOne({'_id' : req.params.id}).
-        exec(function(err, user) {
             if (err) {
                 res.status(404).send({
                     'message': "User not found",
                     'data': []
                 });
             } else {
-                if (user.pendingTasks) {
-                    Task.update({'_id': { $in: user.pendingTasks} },
-                               {assignedUser: ''}, {assignedUserName: ''});
-                }
-                user.remove();
-                res.status(200).send({
-                    'message': "User successfully deleted",
+                res.status(200).json({
+                    'message': "OK",
                     'data': user
                 });
             }
         })
+});
+
+userIdRoute.put(function (req, res) {
+
+    User.findOne({'_id' : req.params.id}, function (err, user) {
+        if (err) {
+            res.status(404).send({
+                'message': "User not found",
+                'data': []
+            });
+        } else {
+            user.name = req.body.name;
+            user.email = req.body.email;
+            user.dateCreated = req.body.dateCreated;
+            user.pendingTasks = req.body.pendingTasks;
+            user.save(function (errSave, userSave) {
+                if (errSave) {
+                    res.status(500).send({
+                        'message': errSave.message + ": " +
+                            (_.map(errSave.errors, function (error) { return error.message; })).join(", "),
+                        'data': []
+                    });
+                } else {
+                    res.status(200).json({
+                        'message': "OK",
+                        'data': userSave
+                    });
+                }
+            });
+        }
+    });
+
+});
+
+userIdRoute.delete(function (req, res) {
+    User.remove({'_id' : req.params.id}).exec(function(err, user) {
+        if (err) {
+            res.status(404).send({
+                'message': "User not found",
+                'data': []
+            });
+        } else {
+            res.status(200).json({
+                'message': "OK",
+                'data': user
+            });
+        }
+    })
 });
 
 //Task route
@@ -182,44 +188,42 @@ taskRoute.get(function (req, res) {
     }
 
     queryModel.
-      limit(req.query.limit).
       sort(req.query.sort ? JSON.parse(req.query.sort) : {}).
       select(req.query.select ? JSON.parse(req.query.select) : {}).
+      limit(req.query.limit).
       skip(req.query.skip).
-      exec(function(err, users) {
-        queryCallback(err, users, res);
+      exec(function(err, tasks) {
+        if (err) {
+            res.status(500).send({
+                'message': err.message,
+                'data': []
+            });
+        } else {
+            res.status(200).json({
+                'message': "OK",
+                'data': tasks
+            });
+        }
       });
 });
 
 taskRoute.post(function (req, res) {
     var newTask = new Task(req.body);
-    if (newTask.assignedUser) {
-        var userPromise = User.findOne({'_id' : newTask.assignedUser}).exec();
-        userPromise.then(function (user) {
-
-            if (newTask.assignedUser && !user) {
-                queryCallback({'message' : 'User ID not found'}, newTask, res);
-            }
-
-            newTask.save(function (err, task) {
-                if (err) {
-                  queryCallback(err, task, res);
-                }
-                
-                if (task.assignedUser && !task.completed && !_.contains(user.pendingTasks, task._id)) {
-                    user.pendingTasks.push(task._id);
-                    user.save();
-                }
-                queryCallback(err, task, res);
-            });
-        });
-    } else {
-        newTask.save(function (err, task) {
-            queryCallback(err, task, res);
-        });
-    }
-
     
+    newTask.save(function (err, task) {
+        if (err) {
+            res.status(500).send({
+                'message': err.message + ": " +
+                    (_.map(err.errors, function (error) { return error.message; })).join(", "),
+                'data': []
+            });
+        } else {
+            res.status(200).json({
+                'message': "OK",
+                'data': task
+            });
+        }
+    });
     
 });
 
@@ -228,53 +232,67 @@ var taskIdRoute = router.route('/tasks/:id');
 taskIdRoute.get(function (req, res) {
     Task.findOne({'_id' : req.params.id}).
         exec(function(err, task) {
-            queryCallback(err, task, res);
+            if (err) {
+                res.status(404).send({
+                    'message': "Task not found",
+                    'data': []
+                });
+            } else {
+                res.status(200).json({
+                    'message': "OK",
+                    'data': task
+                });
+            }
         })
 });
 
 taskIdRoute.put(function (req, res) {
-    var taskPromise = Task.findOne({'_id' : req.params.id}).exec();
-
-    taskPromise.then(function (task){
-        if (task.assignedUser !== req.body.assignedUser && !task.completed) {
-            if (task.assignedUser) {
-              User.findOneAndUpdate({'_id' : task.assignedUser}, {$pull: {pendingTasks: task._id}});
-            }
-            if (req.body.assignedUser) {
-              User.findOneAndUpdate({'_id' : req.body.assignedUser}, {$push: {pendingTasks: task._id}});
-            }
+    Task.findOne({'_id' : req.params.id}, function (err, task) {
+        if (err) {
+            console.log(err);
+            res.status(404).send({
+                'message': "Task not found",
+                'data': []
+            });
+        } else {
+            task.name = req.body.name;
+            task.deadline = req.body.deadline;
+            task.dateCreated = req.body.dateCreated;
+            task.assignedUserName = req.body.assignedUserName;
+            task.assignedUser = req.body.assignedUser;
+            task.save(function (errSave, taskSave) {
+                if (errSave) {
+                    res.status(500).send({
+                        'message': errSave.message + ": " +
+                            (_.map(errSave.errors, function (error) { return error.message; })).join(", "),
+                        'data': []
+                    });
+                } else {
+                    res.status(200).json({
+                        'message': "OK",
+                        'data': taskSave
+                    });
+                }
+            });
         }
-
-        if (task.completed && req.body.assignedUser) {
-            User.findOneAndUpdate({'_id' : req.body.assignedUser}, {$pull: {pendingTasks: task._id}});
-        }
-
-        Task.update({'_id' : req.params.id}, function (err, task) {
-          queryCallback(err, task, res);
-        });
     });
     
 });
 
 taskIdRoute.delete(function (req, res) {
-    Task.findOne({'_id' : req.params.id}).
-        exec(function(err, task) {
-            if (err) {
-                res.status(400).send({
-                    'message': "Task not found",
-                    'data': []
-                });
-            } else {
-                if (task.assignedUser) {
-                    User.findOneAndUpdate({'_id' : task.assignedUser}, {$pull: {pendingTasks: task._id}});
-                }
-                task.remove();
-                res.status(200).send({
-                    'message': "Task successfully deleted",
-                    'data': task
-                });
-            }
-        })
+    Task.remove({'_id' : req.params.id}).exec(function(err, task) {
+        if (err) {
+            res.status(404).send({
+                'message': "Task not found",
+                'data': []
+            });
+        } else {
+            res.status(200).json({
+                'message': "Task deleted",
+                'data': task
+            });
+        }
+    })
 });
 
 // Start the server
