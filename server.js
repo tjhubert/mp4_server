@@ -257,6 +257,7 @@ taskIdRoute.put(function (req, res) {
             });
         } else {
             task.name = req.body.name;
+            task.completed = req.body.completed;
             task.deadline = req.body.deadline;
             task.dateCreated = req.body.dateCreated;
             task.assignedUserName = req.body.assignedUserName;
