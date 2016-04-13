@@ -69,12 +69,12 @@ userRoute.get(function (req, res) {
       skip(req.query.skip).
       exec(function(err, users) {
         if (err) {
-            res.status(500).send({
+            return res.status(500).send({
                 'message': err.message,
                 'data': []
             });
         } else {
-            res.status(200).json({
+            return res.status(200).json({
                 'message': "OK",
                 'data': users
             });
@@ -86,13 +86,13 @@ userRoute.post(function (req, res) {
     var newUser = new User(req.body);
     newUser.save(function (err, user) {
         if (err) {
-            res.status(500).send({
+            return res.status(500).send({
                 'message': err.message + ": " + 
                     (_.map(err.errors, function (error) { return error.message; })).join(", "),
                 'data': []
             });
         } else {
-            res.status(201).json({
+            return res.status(201).json({
                 'message': "OK",
                 'data': user
             });
@@ -106,18 +106,18 @@ userIdRoute.get(function (req, res) {
     User.findOne({'_id' : req.params.id}).
         exec(function(err, user) {
             if (err) {
-                res.status(404).send({
+                return res.status(404).send({
                     'message': "User not found",
                     'data': []
                 });
             } else {
                 if (!user) {
-                    res.status(404).send({
+                    return res.status(404).send({
                         'message': "User not found",
                         'data': []
                     });
                 }
-                res.status(200).json({
+                return res.status(200).json({
                     'message': "OK",
                     'data': user
                 });
@@ -129,13 +129,13 @@ userIdRoute.put(function (req, res) {
 
     User.findOne({'_id' : req.params.id}, function (err, user) {
         if (err) {
-            res.status(404).send({
+            return res.status(404).send({
                 'message': "User not found",
                 'data': []
             });
         } else {
             if (!user) {
-                res.status(404).send({
+                return res.status(404).send({
                     'message': "User not found",
                     'data': []
                 });
@@ -146,13 +146,13 @@ userIdRoute.put(function (req, res) {
             user.pendingTasks = req.body.pendingTasks;
             user.save(function (errSave, userSave) {
                 if (errSave) {
-                    res.status(500).send({
+                    return res.status(500).send({
                         'message': errSave.message + ": " +
                             (_.map(errSave.errors, function (error) { return error.message; })).join(", "),
                         'data': []
                     });
                 } else {
-                    res.status(200).json({
+                    return res.status(200).json({
                         'message': "OK",
                         'data': userSave
                     });
@@ -166,25 +166,25 @@ userIdRoute.put(function (req, res) {
 userIdRoute.delete(function (req, res) {
     User.findOne({'_id' : req.params.id}).exec(function(err, user) {
         if (err) {
-            res.status(404).send({
+            return res.status(404).send({
                 'message': "User not found",
                 'data': []
             });
         } else {
             if (!user) {
-                res.status(404).send({
+                return res.status(404).send({
                     'message': "User not found",
                     'data': []
                 });
             }
             user.remove(function (errDelete, userDelete) {
                 if (errDelete) {
-                    res.status(500).send({
+                    return res.status(500).send({
                         'message': "Error deleting user",
                         'data': []
                     });
                 } else {
-                    res.status(200).json({
+                    return res.status(200).json({
                         'message': "User deleted",
                         'data': userDelete
                     });
@@ -222,12 +222,12 @@ taskRoute.get(function (req, res) {
       skip(req.query.skip).
       exec(function(err, tasks) {
         if (err) {
-            res.status(500).send({
+            return res.status(500).send({
                 'message': err.message,
                 'data': []
             });
         } else {
-            res.status(200).json({
+            return res.status(200).json({
                 'message': "OK",
                 'data': tasks
             });
@@ -240,13 +240,13 @@ taskRoute.post(function (req, res) {
     
     newTask.save(function (err, task) {
         if (err) {
-            res.status(500).send({
+            return res.status(500).send({
                 'message': err.message + ": " +
                     (_.map(err.errors, function (error) { return error.message; })).join(", "),
                 'data': []
             });
         } else {
-            res.status(201).json({
+            return res.status(201).json({
                 'message': "OK",
                 'data': task
             });
@@ -261,18 +261,18 @@ taskIdRoute.get(function (req, res) {
     Task.findOne({'_id' : req.params.id}).
         exec(function(err, task) {
             if (err) {
-                res.status(404).send({
+                return res.status(404).send({
                     'message': "Task not found",
                     'data': []
                 });
             } else {
                 if (!task) {
-                    res.status(404).send({
+                    return res.status(404).send({
                         'message': "Task not found",
                         'data': []
                     });
                 }
-                res.status(200).json({
+                return res.status(200).json({
                     'message': "OK",
                     'data': task
                 });
@@ -284,13 +284,13 @@ taskIdRoute.put(function (req, res) {
     Task.findOne({'_id' : req.params.id}, function (err, task) {
         if (err) {
             console.log(err);
-            res.status(404).send({
+            return res.status(404).send({
                 'message': "Task not found",
                 'data': []
             });
         } else {
             if (!task) {
-                res.status(404).send({
+                return res.status(404).send({
                     'message': "Task not found",
                     'data': []
                 });
@@ -303,13 +303,13 @@ taskIdRoute.put(function (req, res) {
             task.assignedUser = req.body.assignedUser;
             task.save(function (errSave, taskSave) {
                 if (errSave) {
-                    res.status(500).send({
+                    return res.status(500).send({
                         'message': errSave.message + ": " +
                             (_.map(errSave.errors, function (error) { return error.message; })).join(", "),
                         'data': []
                     });
                 } else {
-                    res.status(200).json({
+                    return res.status(200).json({
                         'message': "OK",
                         'data': taskSave
                     });
@@ -323,25 +323,25 @@ taskIdRoute.put(function (req, res) {
 taskIdRoute.delete(function (req, res) {
     Task.findOne({'_id' : req.params.id}).exec(function(err, task) {
         if (err) {
-            res.status(404).send({
+            return res.status(404).send({
                 'message': "Task not found",
                 'data': []
             });
         } else {
             if (!task) {
-                res.status(404).send({
+                return res.status(404).send({
                     'message': "Task not found",
                     'data': []
                 });
             }
             task.remove(function (errDelete, taskDelete) {
                 if (errDelete) {
-                    res.status(500).send({
+                    return res.status(500).send({
                         'message': "Error deleting task",
                         'data': []
                     });
                 } else {
-                    res.status(200).json({
+                    return res.status(200).json({
                         'message': "Task deleted",
                         'data': taskDelete
                     });
