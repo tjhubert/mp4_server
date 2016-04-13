@@ -164,7 +164,7 @@ userIdRoute.put(function (req, res) {
 });
 
 userIdRoute.delete(function (req, res) {
-    User.remove({'_id' : req.params.id}).exec(function(err, user) {
+    User.findOne({'_id' : req.params.id}).exec(function(err, user) {
         if (err) {
             res.status(404).send({
                 'message': "User not found",
