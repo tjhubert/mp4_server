@@ -92,7 +92,7 @@ userRoute.post(function (req, res) {
                 'data': []
             });
         } else {
-            res.status(200).json({
+            res.status(201).json({
                 'message': "OK",
                 'data': user
             });
@@ -219,7 +219,7 @@ taskRoute.post(function (req, res) {
                 'data': []
             });
         } else {
-            res.status(200).json({
+            res.status(201).json({
                 'message': "OK",
                 'data': task
             });
