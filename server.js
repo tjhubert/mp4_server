@@ -111,6 +111,12 @@ userIdRoute.get(function (req, res) {
                     'data': []
                 });
             } else {
+                if (!user) {
+                    res.status(404).send({
+                        'message': "User not found",
+                        'data': []
+                    });
+                }
                 res.status(200).json({
                     'message': "OK",
                     'data': user
@@ -128,6 +134,12 @@ userIdRoute.put(function (req, res) {
                 'data': []
             });
         } else {
+            if (!user) {
+                res.status(404).send({
+                    'message': "User not found",
+                    'data': []
+                });
+            }
             user.name = req.body.name;
             user.email = req.body.email;
             user.dateCreated = req.body.dateCreated;
@@ -159,6 +171,12 @@ userIdRoute.delete(function (req, res) {
                 'data': []
             });
         } else {
+            if (!user) {
+                res.status(404).send({
+                    'message': "User not found",
+                    'data': []
+                });
+            }
             res.status(200).json({
                 'message': "OK",
                 'data': user
@@ -239,6 +257,12 @@ taskIdRoute.get(function (req, res) {
                     'data': []
                 });
             } else {
+                if (!task) {
+                    res.status(404).send({
+                        'message': "Task not found",
+                        'data': []
+                    });
+                }
                 res.status(200).json({
                     'message': "OK",
                     'data': task
@@ -256,6 +280,12 @@ taskIdRoute.put(function (req, res) {
                 'data': []
             });
         } else {
+            if (!task) {
+                res.status(404).send({
+                    'message': "Task not found",
+                    'data': []
+                });
+            }
             task.name = req.body.name;
             task.completed = req.body.completed;
             task.deadline = req.body.deadline;
@@ -289,6 +319,12 @@ taskIdRoute.delete(function (req, res) {
                 'data': []
             });
         } else {
+            if (!task) {
+                res.status(404).send({
+                    'message': "Task not found",
+                    'data': []
+                });
+            }
             res.status(200).json({
                 'message': "Task deleted",
                 'data': task
