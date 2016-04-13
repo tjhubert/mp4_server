@@ -177,10 +177,19 @@ userIdRoute.delete(function (req, res) {
                     'data': []
                 });
             }
-            res.status(200).json({
-                'message': "OK",
-                'data': user
-            });
+            user.remove(function (errDelete, userDelete) {
+                if (errDelete) {
+                    res.status(500).send({
+                        'message': "Error deleting user",
+                        'data': []
+                    });
+                } else {
+                    res.status(200).json({
+                        'message': "User deleted",
+                        'data': userDelete
+                    });
+                }
+            })
         }
     })
 });
@@ -312,7 +321,7 @@ taskIdRoute.put(function (req, res) {
 });
 
 taskIdRoute.delete(function (req, res) {
-    Task.remove({'_id' : req.params.id}).exec(function(err, task) {
+    Task.findOne({'_id' : req.params.id}).exec(function(err, task) {
         if (err) {
             res.status(404).send({
                 'message': "Task not found",
@@ -325,10 +334,20 @@ taskIdRoute.delete(function (req, res) {
                     'data': []
                 });
             }
-            res.status(200).json({
-                'message': "Task deleted",
-                'data': task
-            });
+            task.remove(function (errDelete, taskDelete) {
+                if (errDelete) {
+                    res.status(500).send({
+                        'message': "Error deleting task",
+                        'data': []
+                    });
+                } else {
+                    res.status(200).json({
+                        'message': "Task deleted",
+                        'data': taskDelete
+                    });
+                }
+            })
+            
         }
     })
 });
